@@ -1,6 +1,9 @@
 <?php
+  /*************************************************************************
+    1.Database query to get vote info
+  **************************************************************************/
   $team   = $_REQUEST['team'];
-  $player = $_POST['player'];
+ $player = $_POST['player'];
   echo "You choose champion team is $team.</br>";
   echo "You choose best play is $player.</br>";
   @$db_conn_team = new mysqli('localhost','NBA','NBA','NBATeam');
@@ -40,7 +43,103 @@
       echo 'Could not connect to db_play<br />';
       exit;
     }
-    echo "Insert Record Succeed!";
+    echo "Insert Record Succeed!</br>";
+  }
+  
+  $query_team = 'select * from NBAChampionTeam';
+  $query_play = 'select * from NBABestPlayer';
+
+  $result_team = @$db_conn_team->query($query_team);
+  $result_play = @$db_conn_play->query($query_play);
+
+  if(!$result_team || !$result_play)
+  {
+    echo 'Could not connect to db</br >';
+    exit;
+  }
+  $total_teams = $result_team->num_rows;
+  $total_plays = $result_play->num_rows;
+  $total_team_votes = 0;
+  $total_player_votes = 0;
+
+  while($row_team = $result_team->fetch_object())
+  {
+    $total_team_votes += $row_team->teamVotes;
   }
 
+  while($row_play = $result_play->fetch_object())
+  {
+    $total_play_votes += $row_play->playerVotes;
+  }
+  echo "Total Teams is $total_teams<br/>";
+  echo "Total Plays is $total_plays<br/>";
+  echo "Total Team Votes is $total_team_votes<br/>";
+  echo "Total Player Votes is $total_play_votes<br/>";
+  $result_team->data_seek(0);
+  $result_play->data_seek(0); 
+
+  
+  /*************************************************************************
+    2.Initial calculations for graph
+  **************************************************************************/
+  //set up contents
+  $DOCUMENT_ROOT = $_SERVER['DOCUMENT_ROOT'];
+  echo $DOCUMENT_ROOT."<br>";
+  $width = 500;
+  $left_margin = 50;
+  $right_margin = 50;
+  $bar_height = 40;
+  $bar_spacing = $bar_height/2;
+  $font = $DOCUMENT_ROOT.'/vote/ARIAL.TTF';
+  $title_size = 16;
+  $main_size = 12;
+  $small_size = 12;
+  $text_indet = 10;
+  $x = $left_margin + 60;
+  $y = 50;
+  $bar_unit = ($width-$x-$right_margin)/100;
+  $height = ($bar_height + $bar_spacing) * ($total_teams + $total_plays) + 50; 
+
+  /*************************************************************************
+    3.Set Up Base Image
+  **************************************************************************/
+  //create a blank canvas
+  $im = imagecreatetruecolor($width,$height);
+
+  $white = imagecolorallocate($im,255,255,255);
+  $blue  = imagecolorallocate($im,0,64,128);
+  $black = imagecolorallocate($im,0,0,0);
+  $pink  = imagecolorallocate($im,255,78,243);
+
+  $text_color = $black;
+  $percent_color = $black;
+  $bg_color = $white;
+  $line_color = $black;
+  $bar_color = $blue;
+  $number_color = $pink;
+
+  imagefilledrectangle($im,0,0,$width,$height,$bg_color);
+  imagerectangle($im,0,0,$width-1,$height-1,$line_color);
+
+  $title = "Vote Results";
+  $title_dimensions = imagettfbbox($title_size,0,$font,$title);
+  for($i=0;$i<=7;$i++)
+  {
+    echo "$title_dimensions[$i] ";
+  }
+
+  $title_length = $title_dimensions[2] - $title_dimensions[0];
+  $title_height = abs($title_dimensions[7] - $title_dimensions[1]);
+  $title_above_line = abs($title_dimensions[7]);
+ 
+  $title_x = ($width - $title_length)/2;
+  $title_y = ($y - $title_height)/2 + $title_above_line;
+  echo "title_above_line = $title_above_line<br>";
+  echo "title_x = $title_x<br>";
+  echo "title_y = $title_y<br>";
+  imagettftext($im,$title_size,0,$title_x,$title_y,$text_color,$font,$title);
+  imageline($im,$x,$y-5,$x,$height-15,$line_color);
+ 
+  Header('Content-type:image/png');
+  imagepng($im);
 ?>
