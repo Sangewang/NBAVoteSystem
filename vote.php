@@ -43,7 +43,7 @@
       echo 'Could not connect to db_play<br />';
       exit;
     }
-    echo "Insert Record Succeed!</br>";
+    //echo "Insert Record Succeed!</br>";
   }
   
   $query_team = 'select * from NBAChampionTeam';
@@ -111,18 +111,19 @@
   $blue  = imagecolorallocate($im,0,64,128);
   $black = imagecolorallocate($im,0,0,0);
   $pink  = imagecolorallocate($im,255,78,243);
+  $red   = imagecolorallocate($im,255,0,0);
 
   $text_color = $black;
   $percent_color = $black;
   $bg_color = $white;
   $line_color = $black;
-  $bar_color = $blue;
+  $team_color = $blue;
   $number_color = $pink;
-
+  $play_color = $red;
   imagefilledrectangle($im,0,0,$width,$height,$bg_color);
   imagerectangle($im,0,0,$width-1,$height-1,$line_color);
 
-  $title = "Vote Results";
+  $title = "NBA Chamption & MVP Vote Results";
   $title_dimensions = imagettfbbox($title_size,0,$font,$title);
   /*
   for($i=0;$i<=7;$i++)
@@ -164,7 +165,7 @@
 
     $bar_length = $x + ($percent * $bar_unit);
 
-    imagefilledrectangle($im,$x,$y-2,$bar_length,$y+$bar_height,$bar_color);
+    imagefilledrectangle($im,$x,$y-2,$bar_length,$y+$bar_height,$team_color);
 
     imagettftext($im,$small_size,0,$text_indent,$y+($bar_height/2),$text_color,$font,"$row_team->teamName");
 
@@ -193,9 +194,9 @@
 
     $bar_length = $x + ($percent * $bar_unit);
 
-    imagefilledrectangle($im,$x,$y-2,$bar_length,$y+$bar_height,$bar_color);
+    imagefilledrectangle($im,$x,$y-2,$bar_length,$y+$bar_height,$play_color);
 
-    imagettftext($im,$small_size,0,$text_indent,$y+($bar_height/2),$text_color,$font,"$row_play->playerName");
+    imagettftext($im,$small_size,0,$text_indent+10,$y+($bar_height/2),$text_color,$font,"$row_play->playerName");
 
     imagerectangle($im,$bar_length+1,$y-2,($x+(100*$bar_unit)),$y+$bar_height,$line_color);
 
